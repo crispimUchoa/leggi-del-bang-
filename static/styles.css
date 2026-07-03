@@ -239,6 +239,7 @@ select:focus {
 
 .bang-card {
     min-height: 330px;
+    max-height: 440px;
     display: flex;
     flex-direction: column;
     padding: 1rem;
