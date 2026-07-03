@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS carta (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    description TEXT NOT NULL CHECK (LENGTH(description) <= 128),
+    description TEXT NOT NULL CHECK (LENGTH(description) <= 256),
     creator TEXT NOT NULL,
     type TEXT NOT NULL CHECK (type IN ('LEI', 'DOURADA', 'VERDE', 'AZUL')),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
