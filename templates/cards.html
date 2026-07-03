@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartas Criadas | Leggi del Bang!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('list_cards') }}">Leggi del Bang!</a>
+        <nav>
+            <a class="active" href="{{ url_for('list_cards') }}">Cartas criadas</a>
+            <a href="{{ url_for('create_card') }}">Nova carta</a>
+        </nav>
+    </header>
+
+    <main class="page">
+        <section class="hero">
+            <p class="eyebrow">Arquivo do xerife</p>
+            <h1>Cartas criadas</h1>
+            <p class="subtitle">Clique em uma carta para editar suas regras.</p>
+        </section>
+
+        {% if cards %}
+            <section class="cards-grid" aria-label="Cartas criadas">
+                {% for card in cards %}
+                    <a class="bang-card" href="{{ url_for('edit_card', card_id=card.id) }}">
+                        <div class="card-header">
+                            <span class="type-badge type-{{ card.type|lower }}">{{ card.type }}</span>
+                            <span class="card-id">#{{ card.id }}</span>
+                        </div>
+
+                        <h2>{{ card.name }}</h2>
+                        <p class="card-description">{{ card.description }}</p>
+
+                        <div class="card-footer">
+                            <p><strong>Criador:</strong> {{ card.creator }}</p>
+                            <p><strong>Criada em:</strong> {{ card.created_at }}</p>
+                            <p><strong>Atualizada em:</strong> {{ card.updated_at }}</p>
+                        </div>
+                    </a>
+                {% endfor %}
+            </section>
+        {% else %}
+            <section class="empty-state">
+                <h2>Nenhuma lei no mural ainda.</h2>
+                <p>O saloon está quieto demais. Crie a primeira carta.</p>
+                <a class="submit-button" href="{{ url_for('create_card') }}">Criar primeira carta</a>
+            </section>
+        {% endif %}
+    </main>
+</body>
+</html>

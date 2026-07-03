@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Carta | Leggi del Bang!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('list_cards') }}">Leggi del Bang!</a>
+        <nav>
+            <a href="{{ url_for('list_cards') }}">Cartas criadas</a>
+            <a class="active" href="{{ url_for('create_card') }}">Nova carta</a>
+        </nav>
+    </header>
+
+    <main class="page form-page">
+        <section class="wanted-panel">
+            <p class="eyebrow">Saloon das regras</p>
+            <h1>Criar nova carta</h1>
+            <p class="subtitle">Registre uma nova lei, carta dourada, verde ou azul para a mesa.</p>
+
+            {% if errors %}
+                <div class="errors">
+                    {% for error in errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="card-form">
+                <label for="type">Tipo de carta</label>
+                <select id="type" name="type" required>
+                    {% for card_type in card_types %}
+                        <option value="{{ card_type }}" {% if card.type == card_type %}selected{% endif %}>{{ card_type }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="name">Nome da carta</label>
+                <input id="name" name="name" type="text" maxlength="80" required value="{{ card.name }}">
+
+                <label for="description">Descrição da carta</label>
+                <textarea id="description" name="description" maxlength="128" rows="4" required>{{ card.description }}</textarea>
+                <span class="hint">Limite: 128 caracteres.</span>
+
+                <label for="creator">Nome do criador</label>
+                <input id="creator" name="creator" type="text" maxlength="80" required value="{{ card.creator }}">
+
+                <button type="submit" class="submit-button">Enviar carta</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
