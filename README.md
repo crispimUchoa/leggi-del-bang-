@@ -35,3 +35,4 @@ DATABASE_PATH=/var/data/leggi_del_bang.db
 
 O caminho `/var/data` deve corresponder ao Mount Path do disco criado no Render.
 # leggi-del-bang-
+# leggi-del-bang-
