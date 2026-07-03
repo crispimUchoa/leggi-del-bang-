@@ -49,8 +49,8 @@ def normalize_form_data(form):
         errors.append("O nome da carta é obrigatório.")
     if not description:
         errors.append("A descrição da carta é obrigatória.")
-    if len(description) > 128:
-        errors.append("A descrição deve ter no máximo 128 caracteres.")
+    if len(description) > 256:
+        errors.append("A descrição deve ter no máximo 256 caracteres.")
     if not creator:
         errors.append("O nome do criador é obrigatório.")
 
