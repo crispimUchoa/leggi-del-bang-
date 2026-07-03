@@ -23,6 +23,37 @@
             <p class="subtitle">Clique em uma carta para editar suas regras.</p>
         </section>
 
+        <form class="search-form" action="{{ url_for('list_cards') }}" method="get">
+            <div class="form-group">
+                <label for="q">Pesquisar</label>
+                <input
+                    id="q"
+                    name="q"
+                    type="search"
+                    value="{{ search }}"
+                    placeholder="Nome, descrição, criador ou tipo"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="type">Tipo</label>
+                <select id="type" name="type">
+                    <option value="">Todos os tipos</option>
+                    {% for card_type in card_types %}
+                        <option value="{{ card_type }}" {% if selected_type == card_type %}selected{% endif %}>
+                            {{ card_type }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="submit-button" type="submit">Pesquisar</button>
+
+            {% if search or selected_type %}
+                <a class="secondary-link" href="{{ url_for('list_cards') }}">Limpar pesquisa</a>
+            {% endif %}
+        </form>
+
         {% if cards %}
             <section class="cards-grid" aria-label="Cartas criadas">
                 {% for card in cards %}
@@ -45,9 +76,15 @@
             </section>
         {% else %}
             <section class="empty-state">
-                <h2>Nenhuma lei no mural ainda.</h2>
-                <p>O saloon está quieto demais. Crie a primeira carta.</p>
-                <a class="submit-button" href="{{ url_for('create_card') }}">Criar primeira carta</a>
+                {% if search or selected_type %}
+                    <h2>Nenhuma carta encontrada.</h2>
+                    <p>Tente pesquisar por outro nome, descrição, criador ou tipo.</p>
+                    <a class="submit-button" href="{{ url_for('list_cards') }}">Limpar pesquisa</a>
+                {% else %}
+                    <h2>Nenhuma lei no mural ainda.</h2>
+                    <p>O saloon está quieto demais. Crie a primeira carta.</p>
+                    <a class="submit-button" href="{{ url_for('create_card') }}">Criar primeira carta</a>
+                {% endif %}
             </section>
         {% endif %}
     </main>

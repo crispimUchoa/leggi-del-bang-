@@ -81,14 +81,45 @@ def home():
 
 @app.route("/cartas")
 def list_cards():
-    cards = get_db().execute(
-        """
+    search = request.args.get("q", "").strip()
+    selected_type = request.args.get("type", "").strip().upper()
+
+    query = """
         SELECT id, name, description, creator, type, created_at, updated_at
         FROM carta
-        ORDER BY created_at DESC, id DESC
+        WHERE 1 = 1
+    """
+    params = []
+
+    if search:
+        search_pattern = f"%{search}%"
+        query += """
+            AND (
+                name LIKE ?
+                OR description LIKE ?
+                OR creator LIKE ?
+                OR type LIKE ?
+            )
         """
-    ).fetchall()
-    return render_template("cards.html", cards=cards)
+        params.extend([search_pattern, search_pattern, search_pattern, search_pattern])
+
+    if selected_type in CARD_TYPES:
+        query += " AND type = ?"
+        params.append(selected_type)
+    else:
+        selected_type = ""
+
+    query += " ORDER BY created_at DESC, id DESC"
+
+    cards = get_db().execute(query, params).fetchall()
+
+    return render_template(
+        "cards.html",
+        cards=cards,
+        card_types=CARD_TYPES,
+        search=search,
+        selected_type=selected_type,
+    )
 
 
 @app.route("/cartas/nova", methods=("GET", "POST"))
