@@ -314,7 +314,7 @@ select:focus {
 
 .card-description {
     flex: 1;
-    padding: 1rem;
+    padding: 0.25rem;
     border-top: 2px solid rgba(43, 22, 13, 0.25);
     border-bottom: 2px solid rgba(43, 22, 13, 0.25);
     color: #3f2417;
