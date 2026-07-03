@@ -38,6 +38,13 @@
                     {% endfor %}
                 </select>
 
+                <label for="status">Status</label>
+                <select id="status" name="status" required>
+                    {% for card_status in card_statuses %}
+                        <option value="{{ card_status }}" {% if card.status == card_status %}selected{% endif %}>{{ card_status }}</option>
+                    {% endfor %}
+                </select>
+
                 <label for="name">Nome da carta</label>
                 <input id="name" name="name" type="text" maxlength="80" required value="{{ card.name }}">
 

@@ -8,6 +8,8 @@ app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE_PATH = Path(os.environ.get("DATABASE_PATH", BASE_DIR / "leggi_del_bang.db"))
 CARD_TYPES = ("LEI", "DOURADA", "VERDE", "AZUL")
+CARD_STATUSES = ("ANALISE", "APROVADA", "REPROVADA", "AJUSTES")
+DEFAULT_CARD_STATUS = "ANALISE"
 
 
 def get_db():
@@ -25,22 +27,38 @@ def close_db(error=None):
         db.close()
 
 
+def ensure_status_column(connection):
+    columns = connection.execute("PRAGMA table_info(carta)").fetchall()
+    column_names = {column[1] for column in columns}
+
+    if "status" not in column_names:
+        connection.execute(
+            """
+            ALTER TABLE carta
+            ADD COLUMN status TEXT NOT NULL DEFAULT 'ANALISE'
+            CHECK (status IN ('ANALISE', 'APROVADA', 'REPROVADA', 'AJUSTES'))
+            """
+        )
+
+
 def init_db():
     DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(DATABASE_PATH)
     try:
         with open(BASE_DIR / "schema.sql", encoding="utf-8") as file:
             connection.executescript(file.read())
+        ensure_status_column(connection)
         connection.commit()
     finally:
         connection.close()
 
 
-def normalize_form_data(form):
+def normalize_form_data(form, allow_status=False):
     card_type = form.get("type", "").strip().upper()
     name = form.get("name", "").strip()
     description = form.get("description", "").strip()
     creator = form.get("creator", "").strip()
+    status = form.get("status", DEFAULT_CARD_STATUS).strip().upper()
 
     errors = []
     if card_type not in CARD_TYPES:
@@ -53,18 +71,28 @@ def normalize_form_data(form):
         errors.append("A descrição deve ter no máximo 256 caracteres.")
     if not creator:
         errors.append("O nome do criador é obrigatório.")
+    if allow_status and status not in CARD_STATUSES:
+        errors.append("Status inválido.")
+
+    if not allow_status:
+        status = DEFAULT_CARD_STATUS
 
     return {
         "type": card_type,
         "name": name,
         "description": description,
         "creator": creator,
+        "status": status,
     }, errors
 
 
 def get_card_or_404(card_id):
     card = get_db().execute(
-        "SELECT id, name, description, creator, type, created_at, updated_at FROM carta WHERE id = ?",
+        """
+        SELECT id, name, description, creator, type, status, created_at, updated_at
+        FROM carta
+        WHERE id = ?
+        """,
         (card_id,),
     ).fetchone()
 
@@ -83,9 +111,10 @@ def home():
 def list_cards():
     search = request.args.get("q", "").strip()
     selected_type = request.args.get("type", "").strip().upper()
+    selected_status = request.args.get("status", "").strip().upper()
 
     query = """
-        SELECT id, name, description, creator, type, created_at, updated_at
+        SELECT id, name, description, creator, type, status, created_at, updated_at
         FROM carta
         WHERE 1 = 1
     """
@@ -99,15 +128,28 @@ def list_cards():
                 OR description LIKE ?
                 OR creator LIKE ?
                 OR type LIKE ?
+                OR status LIKE ?
             )
         """
-        params.extend([search_pattern, search_pattern, search_pattern, search_pattern])
+        params.extend([
+            search_pattern,
+            search_pattern,
+            search_pattern,
+            search_pattern,
+            search_pattern,
+        ])
 
     if selected_type in CARD_TYPES:
         query += " AND type = ?"
         params.append(selected_type)
     else:
         selected_type = ""
+
+    if selected_status in CARD_STATUSES:
+        query += " AND status = ?"
+        params.append(selected_status)
+    else:
+        selected_status = ""
 
     query += " ORDER BY created_at DESC, id DESC"
 
@@ -117,14 +159,22 @@ def list_cards():
         "cards.html",
         cards=cards,
         card_types=CARD_TYPES,
+        card_statuses=CARD_STATUSES,
         search=search,
         selected_type=selected_type,
+        selected_status=selected_status,
     )
 
 
 @app.route("/cartas/nova", methods=("GET", "POST"))
 def create_card():
-    card = {"type": "LEI", "name": "", "description": "", "creator": ""}
+    card = {
+        "type": "LEI",
+        "name": "",
+        "description": "",
+        "creator": "",
+        "status": DEFAULT_CARD_STATUS,
+    }
     errors = []
 
     if request.method == "POST":
@@ -151,22 +201,35 @@ def edit_card(card_id):
     errors = []
 
     if request.method == "POST":
-        card, errors = normalize_form_data(request.form)
+        card, errors = normalize_form_data(request.form, allow_status=True)
         card["id"] = card_id
 
         if not errors:
             get_db().execute(
                 """
                 UPDATE carta
-                SET name = ?, description = ?, creator = ?, type = ?, updated_at = CURRENT_TIMESTAMP
+                SET name = ?, description = ?, creator = ?, type = ?, status = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 """,
-                (card["name"], card["description"], card["creator"], card["type"], card_id),
+                (
+                    card["name"],
+                    card["description"],
+                    card["creator"],
+                    card["type"],
+                    card["status"],
+                    card_id,
+                ),
             )
             get_db().commit()
             return redirect(url_for("list_cards"))
 
-    return render_template("edit_card.html", card=card, errors=errors, card_types=CARD_TYPES)
+    return render_template(
+        "edit_card.html",
+        card=card,
+        errors=errors,
+        card_types=CARD_TYPES,
+        card_statuses=CARD_STATUSES,
+    )
 
 
 @app.route("/cartas/<int:card_id>/excluir", methods=("POST",))

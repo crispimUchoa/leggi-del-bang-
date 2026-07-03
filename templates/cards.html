@@ -24,34 +24,56 @@
         </section>
 
         <form class="search-form" action="{{ url_for('list_cards') }}" method="get">
-            <div class="form-group">
-                <label for="q">Pesquisar</label>
-                <input
-                    id="q"
-                    name="q"
-                    type="search"
-                    value="{{ search }}"
-                    placeholder="Nome, descrição, criador ou tipo"
-                >
+            <div class="search-grid">
+                <div class="form-group">
+                    <label for="q">Pesquisar</label>
+                    <input
+                        id="q"
+                        name="q"
+                        type="search"
+                        value="{{ search }}"
+                        placeholder="Nome, descrição, criador, tipo ou status"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="type">Tipo</label>
+                    <select id="type" name="type">
+                        <option value="">Todos os tipos</option>
+                        {% for card_type in card_types %}
+                            <option value="{{ card_type }}" {% if selected_type == card_type %}selected{% endif %}>
+                                {{ card_type }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="">Todos os status</option>
+                        {% for card_status in card_statuses %}
+                            <option value="{{ card_status }}" {% if selected_status == card_status %}selected{% endif %}>
+                                {{ card_status }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="type">Tipo</label>
-                <select id="type" name="type">
-                    <option value="">Todos os tipos</option>
-                    {% for card_type in card_types %}
-                        <option value="{{ card_type }}" {% if selected_type == card_type %}selected{% endif %}>
-                            {{ card_type }}
-                        </option>
-                    {% endfor %}
-                </select>
+            <div class="search-actions">
+                <button class="submit-button" type="submit">Pesquisar</button>
+
+                {% if search or selected_type or selected_status %}
+                    <button
+                        class="submit-button"
+                        type="button"
+                        onclick="window.location.href='{{ url_for('list_cards') }}'"
+                    >
+                        Limpar pesquisa
+                    </button>
+                {% endif %}
             </div>
-
-            <button class="submit-button" type="submit">Pesquisar</button>
-
-            {% if search or selected_type %}
-                <a class="secondary-link" href="{{ url_for('list_cards') }}">Limpar pesquisa</a>
-            {% endif %}
         </form>
 
         {% if cards %}
@@ -59,7 +81,10 @@
                 {% for card in cards %}
                     <a class="bang-card" href="{{ url_for('edit_card', card_id=card.id) }}">
                         <div class="card-header">
-                            <span class="type-badge type-{{ card.type|lower }}">{{ card.type }}</span>
+                            <div class="card-tags">
+                                <span class="type-badge type-{{ card.type|lower }}">{{ card.type }}</span>
+                                <span class="status-badge status-{{ card.status|lower }}">{{ card.status }}</span>
+                            </div>
                             <span class="card-id">#{{ card.id }}</span>
                         </div>
 
@@ -76,9 +101,9 @@
             </section>
         {% else %}
             <section class="empty-state">
-                {% if search or selected_type %}
+                {% if search or selected_type or selected_status %}
                     <h2>Nenhuma carta encontrada.</h2>
-                    <p>Tente pesquisar por outro nome, descrição, criador ou tipo.</p>
+                    <p>Tente pesquisar por outro nome, descrição, criador, tipo ou status.</p>
                     <a class="submit-button" href="{{ url_for('list_cards') }}">Limpar pesquisa</a>
                 {% else %}
                     <h2>Nenhuma lei no mural ainda.</h2>
