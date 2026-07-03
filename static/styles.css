@@ -332,6 +332,35 @@ select:focus {
     margin-bottom: 0.35rem;
 }
 
+.delete-form {
+    margin-top: 0.85rem;
+}
+
+.delete-button {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 2px solid #5c1510;
+    border-radius: 999px;
+    color: #fff7dc;
+    background: linear-gradient(180deg, #b83224, #74180f);
+    box-shadow: 0 6px 0 #42100b, 0 0.45rem 0.9rem rgba(0,0,0,0.3);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.delete-button:hover {
+    filter: brightness(1.06);
+}
+
+.delete-button:active {
+    transform: translateY(3px);
+    box-shadow: 0 3px 0 #42100b, 0 0.35rem 0.7rem rgba(0,0,0,0.28);
+}
+
 @media (max-width: 640px) {
     .topbar {
         align-items: flex-start;

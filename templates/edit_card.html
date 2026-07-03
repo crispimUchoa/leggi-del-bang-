@@ -10,7 +10,7 @@
     <header class="topbar">
         <a class="brand" href="{{ url_for('list_cards') }}">Leggi del Bang!</a>
         <nav>
-            <a href="{{ url_for('list_cards') }}">Cartas criadas</a>
+            <a href="{{ url_for('list_cards') }}">Leis criadas</a>
             <a href="{{ url_for('create_card') }}">Nova carta</a>
         </nav>
     </header>
@@ -48,6 +48,15 @@
                 <input id="creator" name="creator" type="text" maxlength="80" required value="{{ card.creator }}">
 
                 <button type="submit" class="submit-button">Salvar alterações</button>
+            </form>
+
+            <form
+                method="post"
+                action="{{ url_for('delete_card', card_id=card.id) }}"
+                class="delete-form"
+                onsubmit="return confirm('Tem certeza que deseja excluir esta carta? Esta ação não pode ser desfeita.');"
+            >
+                <button type="submit" class="delete-button">Excluir carta</button>
             </form>
         </section>
     </main>

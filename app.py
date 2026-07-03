@@ -138,6 +138,14 @@ def edit_card(card_id):
     return render_template("edit_card.html", card=card, errors=errors, card_types=CARD_TYPES)
 
 
+@app.route("/cartas/<int:card_id>/excluir", methods=("POST",))
+def delete_card(card_id):
+    get_card_or_404(card_id)
+    get_db().execute("DELETE FROM carta WHERE id = ?", (card_id,))
+    get_db().commit()
+    return redirect(url_for("list_cards"))
+
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
